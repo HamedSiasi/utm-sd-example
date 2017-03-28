@@ -2,7 +2,7 @@
 #include "SDBlockDevice.h"
 #include "FATFileSystem.h"
 
-#define UPDATE_FILE     "/sd/mbed-os-example-bootloader-blinky_application.bin"
+#define UPDATE_FILE     "/sd/update.bin"
 
 SDBlockDevice sd(D11, D12, D13, D10);
 FATFileSystem fs("sd");
@@ -24,7 +24,7 @@ int main()
         fclose(file);
         remove(UPDATE_FILE);
     } else {
-        printf("No update found to apply\r\n");
+        printf("No \"update.bin\" file found on SD card to apply.\r\n");
     }
 
     fs.unmount();
