@@ -1,4 +1,4 @@
-# Creating a bootloader for C030
+# Creating A Bootloader For C030
 
 Clone this repo, then run
 
@@ -25,7 +25,7 @@ Starting application
 
 Next you need to build an application to be bootloaded from the SD card.
 
-# Set up application to use bootloader
+# Set Up An Application To Be Bootloaded
 
 The next step is to build an application you can combine with your bootloader to create a loadable image. Clone the application of your choice and, in the `mbed_app.json` for that application, add the following:
 
