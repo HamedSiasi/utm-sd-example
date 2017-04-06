@@ -17,20 +17,23 @@ int main()
 
     FILE *file = fopen(UPDATE_FILE, "rb");
     if (file != NULL) {
-        printf("Firmware update found\r\n");
+        printf("Firmware update found and being applied...\n");
 
         apply_update(file, POST_APPLICATION_ADDR);
 
         fclose(file);
         remove(UPDATE_FILE);
+        printf("Update file now deleted.\n");
     } else {
-        printf("No \"update.bin\" file found on SD card to apply.\r\n");
+        printf("No \"update.bin\" file found on SD card to apply.\n");
     }
 
     fs.unmount();
     sd.deinit();
 
-    printf("Starting application\r\n");
+    printf("Starting application...\n");
+    // Wait for printf() to leave the building
+    wait_ms(10);
 
     mbed_start_application(POST_APPLICATION_ADDR);
 }
