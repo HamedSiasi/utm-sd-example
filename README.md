@@ -57,7 +57,7 @@ No "update.bin" file found on SD card to apply.
 Starting application...
 ```
 
-...and your application should running.
+...and your application should be running.
 
 Copy `<project_name>_application.bin` to an SD card, rename it to `update.bin` and put the SD card into your board.  When the board is reset, you should now see:
 
