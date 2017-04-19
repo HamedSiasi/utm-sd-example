@@ -4,75 +4,110 @@
 
 #define UPDATE_FILE     "/sd/update.bin"
 
-SDBlockDevice sd(D11, D12, D13, D10);
-FATFileSystem fs("sd");
-FlashIAP flash;
+#define PIN_SD_MOSI                   P0_9
+#define PIN_SD_MISO                   P0_8
+#define PIN_SD_SCLK                   P0_7
+#define PIN_SD_SSEL                   P0_6
+#define PIN_SD_VDD_CONTROL_BAR        P0_5
 
-void apply_update(FILE *file, uint32_t address);
+SDBlockDevice * pSd = NULL;
+FATFileSystem * pFs = NULL;
+
+DigitalOut sdVddControlBar(PIN_SD_VDD_CONTROL_BAR, 1);
+
 
 int main()
 {
-    sd.init();
-    fs.mount(&sd);
+	sdVddControlBar = 0;
+	wait_ms (50);
+    pSd = new SDBlockDevice(PIN_SD_MOSI, PIN_SD_MISO, PIN_SD_SCLK, PIN_SD_SSEL);
+	pFs = new FATFileSystem("sd");
+	
+    pSd->init();
+    pFs->mount(pSd);
 
-    FILE *file = fopen(UPDATE_FILE, "rb");
-    if (file != NULL) {
-        printf("Firmware update found and being applied...\n");
-
-        apply_update(file, POST_APPLICATION_ADDR);
-
-        fclose(file);
-        remove(UPDATE_FILE);
-        printf("Update file now deleted.\n");
-    } else {
-        printf("No \"update.bin\" file found on SD card to apply.\n");
+    for(unsigned bc = 0; bc <= 500; bc++)
+    {
+    		FILE *file = fopen("/sd/sdtest.txt", "a");
+    		if (file != NULL) {
+        		fprintf(file, "%d \n", bc);
+        		fclose(file);
+        		printf("Write successful \r\n");
+    		} else {
+        		printf("Could not open file for write \r\n");
+    		}
     }
 
-    fs.unmount();
-    sd.deinit();
+    pFs->unmount();
+    pSd->deinit();
 
-    printf("Starting application...\n");
-    // Wait for printf() to leave the building
-    wait_ms(10);
-
-    mbed_start_application(POST_APPLICATION_ADDR);
+	while(true){}
 }
 
-void apply_update(FILE *file, uint32_t address)
-{
-    flash.init();
 
-    const uint32_t page_size = flash.get_page_size();
-    char *page_buffer = new char[page_size];
-    uint32_t addr = address;
-    uint32_t next_sector = addr + flash.get_sector_size(addr);
-    bool sector_erased = false;
-    while (true) {
 
-        // Read data for this page
-        memset(page_buffer, 0, sizeof(page_buffer));
-        int size_read = fread(page_buffer, 1, page_size, file);
-        if (size_read <= 0) {
-            break;
-        }
 
-        // Erase this page if it hasn't been erased
-        if (!sector_erased) {
-            flash.erase(addr, flash.get_sector_size(addr));
-            sector_erased = true;
-        }
 
-        // Program page
-        flash.program(page_buffer, addr, page_size);
-
-        addr += page_size;
-        if (addr >= next_sector) {
-            next_sector = addr + flash.get_sector_size(addr);
-            sector_erased = false;
-
-        }
-    }
-    delete[] page_buffer;
-
-    flash.deinit();
-}
+//#include "mbed.h"
+//#include "SDBlockDevice.h"
+//#include "FATFileSystem.h"
+//
+//#define UPDATE_FILE     "/sd/update.bin"
+//
+//#define PIN_SD_MOSI                   P0_9
+//#define PIN_SD_MISO                   P0_8
+//#define PIN_SD_SCLK                   P0_7
+//#define PIN_SD_SSEL                   P0_6
+//#define PIN_SD_VDD_CONTROL_BAR        P0_5
+//
+//SDBlockDevice * pSd = NULL;
+//FATFileSystem * pFs = NULL;
+//
+//DigitalOut sdVddControlBar(PIN_SD_VDD_CONTROL_BAR, 1);
+//
+//int main()
+//{
+//	sdVddControlBar = 0;
+//	wait_ms (50);
+//    pSd = new SDBlockDevice(PIN_SD_MOSI, PIN_SD_MISO, PIN_SD_SCLK, PIN_SD_SSEL);
+//	pFs = new FATFileSystem("sd");
+//
+//    pSd->init();
+//    pFs->mount(pSd);
+//
+//    //----------------------------------- Perform a write test ---------------------------------------------
+//    printf("\nWriting to SD card...");
+//    FILE *file = fopen("/sd/sdtest.txt", "w");
+//    if (file != NULL) {
+//        printf("1 \r\n");
+//
+//        fprintf(file, "Hello fun SD Card World!");
+//        printf("2 \r\n");
+//
+//        fclose(file);
+//        printf("Write successful \r\n");
+//    } else {
+//        printf("Could not open file for write \r\n");
+//    }
+//
+//    //----------------------------------- Perform a read test ---------------------------------------------
+//    printf("Reading from SD card... \r\n");
+//    file = fopen("/sd/sdtest.txt", "r");
+//    if (file != NULL)
+//    {
+//    		char c = fgetc(file);
+//        	if (c == 'H'){
+//        		printf("success! \r\n");
+//        	}else{
+//        		printf("incorrect char (%c)! \r\n", c);
+//        	}
+//        	fclose(file);
+//	} else {
+//			printf("failed! \r\n");
+//	}
+//
+//    pFs->unmount();
+//    pSd->deinit();
+//
+//	while(true){}
+//}
